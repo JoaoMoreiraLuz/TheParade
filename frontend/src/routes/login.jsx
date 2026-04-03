@@ -25,8 +25,8 @@ const Login = () => {
 
 
     return (
-        <Flex w={"100%"} h={"100vh"} alignContent={"center"} justifyContent={"center"} flexDirection={"column"} alignItems={"center"}>
-            <VStack w={"95%"} maxW={"400px"} maxH={"80%"}  p={5} borderWidth={1} borderRadius={5} boxShadow={"lg"} bg={"#fff"} gap={2}>
+        <Flex w={"100%"} h={"100vh"} alignContent={"center"} justifyContent={"center"} flexDirection={"column"} alignItems={"center"} gap={5}>
+            <VStack w={"95%"} maxW={"400px"} maxH={"80%"}  p={5} borderWidth={1} borderRadius={5} boxShadow={"lg"} bg={"#fff"} gap={5}>
             <Heading>Login</Heading>
                 <FormControl>
                     <FormLabel htmlFor="username">Username</FormLabel>
