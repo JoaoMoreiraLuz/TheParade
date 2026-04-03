@@ -1,6 +1,6 @@
 #transform informations into json format
 from rest_framework import serializers
-from .models import UserModel
+from .models import UserModel, PostModel
 
 class UserRegisterSerializer(serializers.ModelSerializer):
 
@@ -35,3 +35,28 @@ class UserSerializer(serializers.ModelSerializer):
     
     def get_followingCount(self, obj):
         return obj.following.count()
+    
+class PostSerializer(serializers.ModelSerializer):
+
+    username = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    format_created_at = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PostModel
+        fields = ["id", "username", "description", "created_at", "likes", "image", "likes_count", "format_created_at"]
+    
+    def get_username(self, obj):
+        return obj.user.username
+    
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+    
+    def get_format_created_at(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d")
+    
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = UserModel
+        fields = ["username", "bio", "profile_image", "first_name", "last_name"]

@@ -18,6 +18,14 @@ class UserModel(AbstractUser):
     def __str__(self):
         return self.username
     
+class PostModel(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(UserModel, on_delete=models.CASCADE, related_name='posts')
+    description = models.TextField(blank=True, max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    likes = models.ManyToManyField(UserModel, related_name='liked_posts', blank=True)
+    image = models.ImageField(upload_to="post_images/", blank=True, null=True)
+
 
 
 

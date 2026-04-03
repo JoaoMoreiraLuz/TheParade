@@ -2,8 +2,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from .models import UserModel
-from .serializers import UserRegisterSerializer, UserSerializer
+from rest_framework.pagination import PageNumberPagination
+
+from .models import PostModel, UserModel
+from .serializers import UserRegisterSerializer, UserSerializer, PostSerializer
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -138,3 +140,104 @@ def toggleFollow(request):
             return Response({"isFollowing": True})
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getPosts(request, primary_key):
+    try:
+        user = UserModel.objects.get(username=primary_key)
+        loggedUser = UserModel.objects.get(username=request.user.username)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
+    
+    posts = user.posts.all().order_by('-created_at')
+    serializer = PostSerializer(posts, many=True)
+
+    data = []
+
+    for post in serializer.data:
+        new_post = {}
+
+        if loggedUser.username in post['likes']:
+            new_post = {**post, "liked": True}
+        else:
+            new_post = {**post, "liked": False}
+        data.append(new_post)
+
+    return Response(data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def toggleLike(request):
+    try:
+        try:
+            post = PostModel.objects.get(id=request.data['post_id'])
+        except PostModel.DoesNotExist:
+            return Response({"error": "Post not found"})
+        
+        try:
+            user = UserModel.objects.get(username=request.user.username)
+        except Exception as e:
+            return Response({"error": "User not found"})
+        
+        if user in post.likes.all():
+            post.likes.remove(user)
+            return Response({"liked": False})
+        else:
+            post.likes.add(user)
+            return Response({"liked": True})
+    except Exception as e:
+        return Response({"error": "failed to like the post"}) 
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def createPost(request):
+    
+    try:
+        data = request.data
+
+        try:
+            user = UserModel.objects.get(username=request.user.username)
+        except UserModel.DoesNotExist:
+            return Response({"error": "User not found"})
+        
+        post = PostModel.objects.create(
+            user=user,
+            description=data.get('description', ''),
+            image=data.get('image', None)
+        )
+
+        serializer = PostSerializer(post, many=False)
+        return Response(serializer.data)
+    except Exception as e:
+        return Response({"error": "An error occurred while creating the post: " + str(e)})
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFeed(request):
+
+    try:
+        loggedUser = UserModel.objects.get(username=request.user.username)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
+    
+    posts = PostModel.objects.all().order_by('-created_at')
+
+    paginator = PageNumberPagination()
+    paginator.page_size = 10
+
+    result_page = paginator.paginate_queryset(posts, request)
+    serializer = PostSerializer(result_page, many=True)
+
+    data = []
+
+    for post in serializer.data:
+        new_post = {}
+
+        if loggedUser.username in post['likes']:
+            new_post = {**post, "liked": True}
+        else:
+            new_post = {**post, "liked": False}
+        data.append(new_post)
+
+    return paginator.get_paginated_response(data)
