@@ -4,7 +4,7 @@ import Navbar from "./navbar";
 
 const Layout = ({ children }) => {
   return (
-    <VStack w={"100%"} h={"100vh"} bg={"gray.100"} alignItems={"flex-start"}>
+    <VStack w={"100%"} h={"100%"} bg={"gray.100"} alignItems={"flex-start"}>
         <Navbar/>
         <Box w={"100%"}>
             {children}

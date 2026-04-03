@@ -85,3 +85,28 @@ export const toggleFollow = async (username) => {
     const response = await API.post("/toggle-follow/", { username: username });
     return response.data;
 }
+
+export const getUserPosts = async (username) => {
+    const response = await API.get(`/posts/${username}/`);
+    return response.data;
+}
+
+export const toggleLike = async (post_id) => {
+    const response = await API.post("/toggle-like/", { post_id: post_id });
+    return response.data;
+}
+
+export const createPost = async (description, imageFile) => {
+    const formData = new FormData();
+    formData.append('description', description);
+    if (imageFile) {
+        formData.append('image', imageFile);
+    }
+    const response = await API.post("/create-post/", formData);
+    return response.data;
+}
+
+export const getFeedPosts = async (num) => {
+    const response = await API.get(`/feed/?page=${num}`);
+    return response.data;
+}

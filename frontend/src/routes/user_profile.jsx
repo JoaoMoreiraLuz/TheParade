@@ -1,8 +1,9 @@
 import { Box, Button, Flex, Heading, HStack, Image, Spacer, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import { getUserProfile, toggleFollow } from "../api/endpoints";
+import { getUserProfile, toggleFollow, getUserPosts } from "../api/endpoints";
 import { useAuth } from "../contexts/useAuth";
 import { SERVER_URL } from "../constants/constants";
+import { Post } from "../components/post";
 
 function UserProfile() {
 
@@ -18,10 +19,13 @@ function UserProfile() {
   }, []);
 
   return (
-    <Flex w={"100%"} paddingTop={"40px"} justifyContent={"flex-start"} alignItems={"center"} paddingLeft={"40px"}>
-      <VStack w={"75%"}>
+    <Flex w={"100%"} h={"100%"} bg={"whitesmoke"} paddingTop={"40px"} justifyContent={"flex-start"} alignItems={"center"} paddingLeft={"40px"}>
+      <VStack w={"100%"}>
         <Box w={"100%"} mt={"40px"}>
           <UserDetails username={username} />
+        </Box>
+        <Box w={"100%"} mt={"30px"}>
+          <UserPosts username={username} />
         </Box>
       </VStack>
     </Flex>
@@ -72,7 +76,7 @@ const UserDetails = ({ username }) => {
   }, [username]);
 
   return (
-    <VStack w={"100%"} alignItems={"start"} gap={"40px"}>
+  <VStack w={"100%"} alignItems={"start"} gap={"40px"}>
       <Heading>@{username}</Heading>
     <HStack gap={"20px"} alignItems={"center"}>
         <Box boxSize={"150px"} border={"2px solid"} borderColor={"gray.300"} borderRadius={"full"} overflow={"hidden"}>
@@ -98,11 +102,55 @@ const UserDetails = ({ username }) => {
             :
               <Button onClick={handleFollowToggle} w={"100%"} bg={isFollowing ? "gray.500" : "blue.500"} _hover={{ bg: isFollowing ? "gray.600" : "blue.600" }}>{isFollowing ? "Unfollow" : "Follow"}</Button>
           }
-        </VStack>
+          </VStack>
       </HStack> 
       <Text fontSize={"18px"}>{ loading ? "..." : bio}</Text>
     </VStack>
   );
+}
+
+const UserPosts = ({username}) => {
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+
+    const fetchPosts = async () => {
+      try {
+        const data = await getUserPosts(username);
+        setPosts(data);
+      } catch (error) {
+        console.error("Error fetching user posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+
+  }, [username]);
+
+  return (
+    <Flex w={"100%"} flexWrap={"wrap"} gap={"20px"} justifyContent={"center"} pb={3}>
+      
+    {loading ? 
+      
+      <Text>Loading...</Text> 
+      
+      :
+      
+      posts.length === 0 ?
+        <Text>This user has no posts yet.</Text>
+      :
+        posts.map((post) => (
+          <Post key={post.id} id={post.id} username={post.username} description={post.description} liked={post.liked} image={post.image} likes_count={post.likes_count} format_created_at={post.format_created_at} />
+        ))
+    }
+      
+
+    </Flex>
+  )
 }
 
 export default UserProfile;
