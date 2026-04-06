@@ -55,8 +55,8 @@ class PostSerializer(serializers.ModelSerializer):
     def get_format_created_at(self, obj):
         return obj.created_at.strftime("%Y-%m-%d")
     
-class UserSerializer(serializers.ModelSerializer):
+class UserSearchSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ["username", "bio", "profile_image", "first_name", "last_name"]
+        fields = ["username", "email", "bio", "profile_image", "first_name", "last_name"]
