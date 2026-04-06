@@ -110,3 +110,8 @@ export const getFeedPosts = async (num) => {
     const response = await API.get(`/feed/?page=${num}`);
     return response.data;
 }
+
+export const searchUsersEndpoint = async (search) => {
+    const response = await API.get(`/search/?query=${search}`);
+    return response.data;
+}
