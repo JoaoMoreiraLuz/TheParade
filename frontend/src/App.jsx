@@ -8,6 +8,7 @@ import Register from './routes/register';
 import CreatePostTab from './routes/createPostTab';
 import Search from './routes/search';
 import Home from './routes/home';
+import ProfileEditor from './routes/profileEditor';
 
 import { AuthProvider } from './contexts/useAuth';
 import { PrivateRoute } from './components/private_route';
@@ -24,6 +25,7 @@ function App() {
             <Route element={<Layout><PrivateRoute><CreatePostTab /></PrivateRoute></Layout>} path='/create/post'  />
             <Route element={<Layout><PrivateRoute><Home /></PrivateRoute></Layout>} path='/'  />
             <Route element={<Layout><PrivateRoute><Search /></PrivateRoute></Layout>} path='/search'  />
+            <Route element={<Layout><PrivateRoute><ProfileEditor /></PrivateRoute></Layout>} path='/profileEditor'  />
             <Route element={<Layout><Login /></Layout>} path='/login'  />
             <Route element={<Layout><Register /></Layout>} path='/register'  />
           </Routes>
