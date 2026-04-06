@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom"
 import { RiUserFill } from "react-icons/ri";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import { FaSearch } from "react-icons/fa";
+import { IoSettingsSharp } from "react-icons/io5";
 
 
 import TheParade from "../media/TheParade.png";
@@ -22,13 +23,13 @@ const Navbar = () => {
     }
 
 const handleNavigateUser = () => {
-    const username = JSON.parse(localStorage.getItem('user'))
-    if (username) {
-        navigate(`/${username}`)
-        window.location.reload()
-    } else {
-        console.error('User is not logged')
-    }
+  const userData = JSON.parse(localStorage.getItem('user'))
+  if (userData && userData.username) {
+    navigate(`/${userData.username}`)
+    window.location.reload()
+  } else {
+    console.error('User is not logged')
+  }
 }
 
     return (
@@ -46,6 +47,9 @@ const handleNavigateUser = () => {
                     </Text>
                     <Text color="white" fontSize="lg" onClick={() => handleNavigate("/search")} cursor={"pointer"} _hover={{ color: "gray.400", transition: "0.2s" }}> 
                         <FaSearch size={"18px"} />
+                    </Text>
+                    <Text color="white" fontSize="lg" onClick={() => handleNavigate("/profileEditor")} cursor={"pointer"} _hover={{ color: "gray.400", transition: "0.2s" }}> 
+                        <IoSettingsSharp size={"18px"} />
                     </Text>
                 </HStack>
             </HStack>

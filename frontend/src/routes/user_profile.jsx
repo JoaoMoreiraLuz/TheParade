@@ -2,8 +2,9 @@ import { Box, Button, Flex, Heading, HStack, Image, Spacer, Text, VStack } from 
 import { useEffect, useState } from "react";
 import { getUserProfile, toggleFollow, getUserPosts } from "../api/endpoints";
 import { useAuth } from "../contexts/useAuth";
-import { SERVER_URL } from "../constants/constants";
 import { Post } from "../components/post";
+
+import { useNavigate } from 'react-router-dom';
 
 function UserProfile() {
 
@@ -33,81 +34,114 @@ function UserProfile() {
 }
 
 const UserDetails = ({ username }) => {
-
   const { user: loggedInUser } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [bio, setBio] = useState("");
-  const [profileImage, setProfileImage] = useState("");
-  const [followers, setFollowers] = useState(0);
-  const [following, setFollowing] = useState(0);
+  const [userData, setUserData] = useState(null); 
   const [isOurProfile, setIsOurProfile] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
-  const handleFollowToggle = async () => {
-    const data = await toggleFollow(username);
-    if (data.isFollowing) {
-      setFollowers(followers + 1);
-      setIsFollowing(true);
-    } else {
-      setFollowers(followers - 1);
-      setIsFollowing(false);
-    }
+  const nav = useNavigate()
+
+  const handleEditButton = () => {
+    nav('/profileEditor')
   }
+
+  const handleFollowToggle = async () => {
+    try {
+      const data = await toggleFollow(username);
+      setIsFollowing(data.isFollowing);
+
+      setUserData(prev => ({
+        ...prev,
+        followersCount: data.isFollowing
+          ? prev.followersCount + 1
+          : prev.followersCount - 1
+      }));
+    } catch (err) {
+      console.error("Erro ao seguir/desseguir usuário:", err);
+    }
+  };
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const data = await getUserProfile(username);
-        setBio(data.bio);
-        setProfileImage(data.profile_image);
-        setFollowers(data.followersCount);
-        setFollowing(data.followingCount);
+        const res = await getUserProfile(username);
 
-        setIsOurProfile(data.LoggedAs);
-        setIsFollowing(data.Following);
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
+        setUserData(res.user);
+        setIsFollowing(res.Following);
+
+        if (loggedInUser && loggedInUser.username === userData.username) {
+          setIsOurProfile(true);
+        } else {
+          setIsOurProfile(false);
+        }
+
+      } catch (err) {
+        console.error("Erro ao buscar perfil do usuário:", err);
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserProfile();
-  }, [username]);
+  }, [username, loggedInUser]);
+
+  if (loading) return <Text>Carregando perfil...</Text>;
+  if (!userData) return <Text>Usuário não encontrado</Text>;
 
   return (
-  <VStack w={"100%"} alignItems={"start"} gap={"40px"}>
-      <Heading>@{username}</Heading>
-    <HStack gap={"20px"} alignItems={"center"}>
-        <Box boxSize={"150px"} border={"2px solid"} borderColor={"gray.300"} borderRadius={"full"} overflow={"hidden"}>
-            <Image boxSize={"100%"} objectFit={"cover"} src={ loading ? null : `${SERVER_URL}${profileImage}`} />
+    <VStack w="100%" alignItems="start" gap="40px">
+      <Heading>@{userData.username}</Heading>
+
+      <HStack gap="20px" alignItems="center">
+        <Box
+          boxSize="150px"
+          border="2px solid"
+          borderColor="gray.300"
+          borderRadius="full"
+          overflow="hidden"
+        >
+          <Image
+            boxSize="100%"
+            objectFit="cover"
+            src={loading ? null : userData.profile_image}
+          />
         </Box>
-        <VStack gap={"20px"}>
-          <HStack gap={"20px"} fontSize={"18px"}>
+
+        <VStack gap="20px">
+          <HStack gap="20px" fontSize="18px">
             <VStack>
               <Text>Followers</Text>
-              <Text>{ loading ? "-" : followers}</Text>
+              <Text>{userData.followersCount}</Text>
             </VStack>
             <VStack>
               <Text>Following</Text>
-              <Text>{ loading ? "-" : following}</Text>
+              <Text>{userData.followingCount}</Text>
             </VStack>
           </HStack>
-          {
-            loading ? 
-              <Spacer />
-            :
-            isOurProfile ? 
-              <Button w={"100%"} bg={"#333"} _hover={{ bg: "blue.600" }} textColor={"#fcfcfc"}>Edit profile</Button>
-            :
-              <Button onClick={handleFollowToggle} w={"100%"} bg={isFollowing ? "gray.500" : "blue.500"} _hover={{ bg: isFollowing ? "gray.600" : "blue.600" }}>{isFollowing ? "Unfollow" : "Follow"}</Button>
-          }
-          </VStack>
-      </HStack> 
-      <Text fontSize={"18px"}>{ loading ? "..." : bio}</Text>
+
+          {isOurProfile ? (
+            <Button onClick={handleEditButton} w={"100%"} bg={"#333"} _hover={{ bg: "blue.600" }} textColor={"#fcfcfc"}>
+              Edit profile
+            </Button>
+          ) : (
+            <Button
+              onClick={handleFollowToggle}
+              w={"100%"}
+              bg={isFollowing ? "gray.500" : "blue.500"}
+              _hover={{ bg: isFollowing ? "gray.600" : "blue.600" }}
+            >
+              {isFollowing ? "Unfollow" : "Follow"}
+            </Button>
+          )}
+        </VStack>
+      </HStack>
+
+      <Text fontSize="18px">{userData.bio}</Text>
     </VStack>
   );
-}
+};
+
 
 const UserPosts = ({username}) => {
 

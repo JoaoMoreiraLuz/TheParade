@@ -8,7 +8,6 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
 
     const [auth, setAuth] = useState(() => {
-        // Restaurar auth state do localStorage ao inicializar
         try {
             const savedAuth = localStorage.getItem('auth');
             return savedAuth && savedAuth !== 'undefined' ? JSON.parse(savedAuth) : false;
@@ -18,7 +17,6 @@ export const AuthProvider = ({ children }) => {
         }
     });
     const [user, setUser] = useState(() => {
-        // Restaurar username do localStorage ao inicializar
         try {
             const savedUser = localStorage.getItem('user');
             return savedUser && savedUser !== 'undefined' ? JSON.parse(savedUser) : null;
@@ -34,9 +32,9 @@ export const AuthProvider = ({ children }) => {
         try {
             const userData = await getAuthenticatedUser();
             setAuth(true);
-            setUser(userData.username);
+            setUser(userData);
             localStorage.setItem('auth', JSON.stringify(true));
-            localStorage.setItem('user', JSON.stringify(userData.username));
+            localStorage.setItem('user', JSON.stringify(userData));
         } catch (error) {
             setAuth(false);
             setUser(null);
@@ -52,8 +50,15 @@ export const AuthProvider = ({ children }) => {
                if (data.success) {
                     setAuth(true);
                     setUser(username);
+                    const userData = {
+                        "username":data.user.username,
+                        "bio":data.user.bio,
+                        "email":data.user.email,
+                        "first_name":data.user.first_name,
+                        "last_name":data.user.last_name
+                    }
                     localStorage.setItem('auth', JSON.stringify(true));
-                    localStorage.setItem('user', JSON.stringify(username));
+                    localStorage.setItem('user', JSON.stringify(userData));
                     navigate(`/${username}`);
                } else {
                     alert("Login failed, invalid username or password");

@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = UserModel
-        fields = ["username", "bio", "profile_image", "followersCount", "followingCount"]
+        fields = ['username', 'email', 'first_name', 'last_name', 'bio', 'profile_image', 'followersCount', 'followingCount']
 
     def get_followersCount(self, obj):
         return obj.followers.count()
@@ -55,8 +55,26 @@ class PostSerializer(serializers.ModelSerializer):
     def get_format_created_at(self, obj):
         return obj.created_at.strftime("%Y-%m-%d")
     
-class UserSearchSerializer(serializers.ModelSerializer):
+class UserFetchSerializer(serializers.ModelSerializer):
+    profile_image = serializers.SerializerMethodField()
+    followersCount = serializers.SerializerMethodField()
+    followingCount = serializers.SerializerMethodField()
 
     class Meta:
         model = UserModel
-        fields = ["username", "email", "bio", "profile_image", "first_name", "last_name"]
+        fields = ['username', 'email', 'first_name', 'last_name', 'bio', 'profile_image', 'followersCount', 'followingCount']
+
+    def get_profile_image(self, obj):
+        if obj.profile_image:
+            request = self.context.get('request')
+            if request:
+                # Adiciona /api antes de /media
+                return request.build_absolute_uri(f"/api{obj.profile_image.url}")
+            return f"/api{obj.profile_image.url}"
+        return None
+
+    def get_followersCount(self, obj):
+        return obj.followers.count()  # Total de pessoas que seguem este usuário
+
+    def get_followingCount(self, obj):
+        return obj.following.count()  # Total de pessoas que este usuário segue
