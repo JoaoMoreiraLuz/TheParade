@@ -18,7 +18,5 @@ COPY . .
 
 # Run migrations and collect static files
 RUN python manage.py collectstatic --noinput || true
-RUN python manage.py migrate --noinput || true
 
-# Start gunicorn
-CMD ["gunicorn", "backend.wsgi:application", "--bind", "0.0.0.0:$PORT"]
+CMD python manage.py migrate --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT
