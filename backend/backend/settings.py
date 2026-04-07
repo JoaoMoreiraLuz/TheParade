@@ -33,7 +33,7 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
-    "https://*.railway.app",
+    "https://theparade-backend-production.up.railway.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = True
