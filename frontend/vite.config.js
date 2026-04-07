@@ -5,11 +5,11 @@ export default defineConfig({
   plugins: [react()],
   preview: {
     host: '0.0.0.0',
-    port: process.env.PORT || 8080,
-    allowedHosts: 'all'
+    port: parseInt(process.env.PORT) || 4173,
+    allowedHosts: ['theparade-frontend-production.up.railway.app']
   },
   server: {
     host: '0.0.0.0',
-    port: process.env.PORT || 5173,
+    port: parseInt(process.env.PORT) || 5173,
   }
 })
