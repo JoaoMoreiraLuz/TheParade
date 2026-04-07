@@ -3,7 +3,7 @@ from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
 
-from .views import CustomTokenObtainPairView, createPost, getFeed, getPosts, getUser, CustomRefreshTokenView, registerUser, isAuthenticated, toggleFollow, toggleLike
+from .views import CustomTokenObtainPairView, createPost, getFeed, getPosts, getUser, CustomRefreshTokenView, registerUser, isAuthenticated, toggleFollow, toggleLike, searchUsers, logout, UpdateUserDetails
 urlpatterns = [
     path('user/<str:primary_key>/', getUser),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -14,6 +14,10 @@ urlpatterns = [
     path('toggle-like/', toggleLike),
     path('posts/<str:primary_key>/', getPosts),
     path('create-post/', createPost),
-    path('feed/', getFeed)
+    path('feed/', getFeed),
+    path('search/', searchUsers),
+    path('update_user/', UpdateUserDetails),
+    path('logout/', logout)
+    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     

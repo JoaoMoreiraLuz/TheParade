@@ -22,11 +22,15 @@ API.interceptors.response.use(
                     .find(row => row.startsWith('refresh_token='));
                 
                 if (!refreshToken) {
-                    // Nenhum refresh token disponível
                     return Promise.reject(error);
                 }
 
-                await API.post("/token/refresh/");
+                const res = await API.post("/token/refresh/");
+
+                if (!res.data?.access) {
+                    throw new Error("Refresh falhou");
+                }
+
                 return API(originalRequest);
             } catch (refreshError) {
                 window.location.href = "/login";
@@ -109,4 +113,19 @@ export const createPost = async (description, imageFile) => {
 export const getFeedPosts = async (num) => {
     const response = await API.get(`/feed/?page=${num}`);
     return response.data;
+}
+
+export const searchUsersEndpoint = async (search) => {
+    const response = await API.get(`/search/?query=${search}`);
+    return response.data;
+}
+
+export const logout = async () => {
+    const response = await API.post("/logout/")
+    return response.data
+}
+
+export const updateUser = async (values) => {
+    const response = await API.patch("/update_user/", values, { headers: {'Content-Type': 'multipart/form-data'} })
+    return response.data
 }
