@@ -1,3 +1,5 @@
+FROM python:3.13-slim
+
 WORKDIR /app
 
 # Install system dependencies for PostgreSQL and build tools
@@ -9,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 
 # Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
 COPY . .
