@@ -17,6 +17,30 @@ const CreatePostTab = () => {
     const [imageFile, setImageFile] = useState(null);
     const [description, setDescription] = useState("");
 
+      const uploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', import.meta.env.ml_default);
+    formData.append('api_key', import.meta.env.VITE_CLOUDINARY_API_KEY);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${import.meta.env.di4g4s4zh}/image/upload`,
+      { method: 'POST', body: formData }
+    );
+    const data = await res.json();
+    setImageFile(data.secure_url);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (image) {
+      setLoading(true);
+      await uploadImage(image);
+      setLoading(false);
+    }
+  };
+
+
     const handlePost = async () => {
         try {
             if (!description.trim()) {
@@ -27,6 +51,7 @@ const CreatePostTab = () => {
             setDescription("");
             setPreviewImage(null);
             setImageFile(null);
+            handleSubmit()
             alert("Post created successfully!");
         } catch (error) {
             console.error("Error creating post:", error);
@@ -70,7 +95,7 @@ const CreatePostTab = () => {
                                     <label htmlFor="image-upload">
                                         <Box w={"100%"} h={"100%"} bg={"gray.200"} overflow={"hidden"} borderRadius={"5px"} cursor={"pointer"}>
                                             <Input w={"100%"} h={"100%"} type="file" accept="image/*" onChange={handleImageChange} display={"none"} id="image-upload" />
-                                            <img src={previewImage} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                                            <img src={imageFile} alt="Preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                                         </Box>
                                     </label>
                                 ) : (

@@ -21,6 +21,29 @@ const ProfileEditor = () => {
 
     const nav = useNavigate()
 
+          const uploadImage = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', import.meta.env.ml_default);
+    formData.append('api_key', import.meta.env.VITE_CLOUDINARY_API_KEY);
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${import.meta.env.di4g4s4zh}/image/upload`,
+      { method: 'POST', body: formData }
+    );
+    const data = await res.json();
+    setPreviewImage(data.secure_url);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (image) {
+      setLoading(true);
+      await uploadImage(image);
+      setLoading(false);
+    }
+  };
+
     const handleLogout = async () => {
         try {
             await logout()
@@ -63,6 +86,7 @@ const ProfileEditor = () => {
             const reader = new FileReader();
             reader.onloadend = () => setPreviewImage(reader.result);
             reader.readAsDataURL(file);
+            handleSubmit()
         } else {
             setImageFile(null);
             setPreviewImage(storage.profile_image ? `${SERVER_URL}/api${storage.profile_image}` : '');

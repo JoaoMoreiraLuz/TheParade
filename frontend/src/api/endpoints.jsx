@@ -129,3 +129,15 @@ export const updateUser = async (values) => {
     const response = await API.patch("/update_user/", values, { headers: {'Content-Type': 'multipart/form-data'} })
     return response.data
 }
+
+export const uploadImage = async (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+
+  const res = await fetch(
+    `https://api.cloudinary.com/v1_1/${import.meta.env.di4g4s4zh}/image/upload`,
+    { method: "POST", body: formData }
+  );
+  return res.json();
+};
