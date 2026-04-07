@@ -1,1 +1,1 @@
-export const SERVER_URL = "https://theparade-backend-production.up.railway.app/api";
+export const SERVER_URL = import.meta.env.VITE_API_URL;
