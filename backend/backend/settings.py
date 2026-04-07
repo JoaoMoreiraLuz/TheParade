@@ -34,6 +34,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:8000",
     "https://theparade-backend-production.up.railway.app",
+    "https://theparade-frontend-production.up.railway.app"
 ]
 
 CORS_ALLOW_CREDENTIALS = True
