@@ -30,10 +30,12 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-#2h9pyt2ukaue+n+94)h_nw76a
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ["*"]
-CSRF_TRUSTED_ORIGINS=['https://theparade-backend-production.up.railway.app', 'https//127.0.0.1:8000']
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://theparade-frontend-production.up.railway.app",
+]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://theparade-backend-production.up.railway.app",
     "https://theparade-frontend-production.up.railway.app"
 ]
 
@@ -47,6 +49,10 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
 
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
 
 # Application definition
 
