@@ -18,10 +18,7 @@ def isAuthenticated(request):
     try:
         user = request.user
         serializer = UserSerializer(user, many=False)
-        return Response({
-            **serializer.data,
-            "isAuthenticated": True
-        })
+        return Response({**serializer.data, "isAuthenticated": True})
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
 
@@ -39,7 +36,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         try:
             response = super().post(request, *args, **kwargs)
             tokens = response.data
-
             access_token = tokens["access"]
             refresh_token = tokens["refresh"]
             username = request.data.get('username')
@@ -54,30 +50,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
             serializer = UserFetchSerializer(user, context={'request': request})
             res = Response()
-
-            res.data = {
-                "success": True,
-                "isAuthenticated": True,
-                "user": serializer.data
-            }
-
-            res.set_cookie(
-                key="access_token",
-                value=access_token,
-                httponly=True,
-                secure=True,
-                samesite="None",
-                path="/"
-            )
-
-            res.set_cookie(
-                key="refresh_token",
-                value=refresh_token,
-                httponly=True,
-                secure=True,
-                samesite="None",
-                path="/"
-            )
+            res.data = {"success": True, "isAuthenticated": True, "user": serializer.data}
+            res.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="None", path="/")
+            res.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite="None", path="/")
             return res
         except Exception as e:
             return Response({"success": False, "error": str(e)})
@@ -87,25 +62,10 @@ class CustomRefreshTokenView(TokenRefreshView):
         try:
             refresh_token = request.COOKIES.get("refresh_token")
             request.data['refresh'] = refresh_token
-
             response = super().post(request, *args, **kwargs)
-            tokens = response.data
-
-            access_token = tokens['access']
-
-            res = Response({
-                "access": access_token
-            })
-
-            res.set_cookie(
-                key="access_token",
-                value=access_token,
-                httponly=True,
-                secure=False,
-                samesite="Lax",
-                path="/"
-            )
-            
+            access_token = response.data['access']
+            res = Response({"access": access_token})
+            res.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="Lax", path="/")
             return res
         except Exception as e:
             return Response({"error": str(e)}, status=401)
@@ -116,9 +76,7 @@ def getUser(request, primary_key):
     try:
         user = UserModel.objects.get(username=primary_key)
         serializer = UserFetchSerializer(user, context={'request': request})
-
         following = request.user in user.followers.all()
-
         return Response({
             "isAuthenticated": True,
             "user": serializer.data,
@@ -134,21 +92,47 @@ def getUser(request, primary_key):
 @permission_classes([IsAuthenticated])
 def toggleFollow(request):
     try:
-        try:
-            myUser = UserModel.objects.get(username=request.user.username)
-            userToFollow = UserModel.objects.get(username=request.data['username'])
-        except UserModel.DoesNotExist:
-            return Response({"error": "User not found"})
-        
+        myUser = UserModel.objects.get(username=request.user.username)
+        userToFollow = UserModel.objects.get(username=request.data['username'])
         if myUser in userToFollow.followers.all():
             userToFollow.followers.remove(myUser)
             return Response({"isFollowing": False})
         else:
             userToFollow.followers.add(myUser)
             return Response({"isFollowing": True})
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
-    
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFollowers(request, username):
+    try:
+        user = UserModel.objects.get(username=username)
+        followers = user.followers.all()
+        serializer = UserFetchSerializer(followers, many=True, context={'request': request})
+        return Response(serializer.data)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
+    except Exception as e:
+        return Response({"error": str(e)})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFollowing(request, username):
+    try:
+        user = UserModel.objects.get(username=username)
+        following = user.following.all()
+        serializer = UserFetchSerializer(following, many=True, context={'request': request})
+        return Response(serializer.data)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
+    except Exception as e:
+        return Response({"error": str(e)})
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getPosts(request, primary_key):
@@ -167,7 +151,6 @@ def getPosts(request, primary_key):
             data.append({**post, "liked": True})
         else:
             data.append({**post, "liked": False})
-
     return Response(data)
 
 @api_view(['POST'])
@@ -178,10 +161,9 @@ def toggleLike(request):
             post = PostModel.objects.get(id=request.data['post_id'])
         except PostModel.DoesNotExist:
             return Response({"error": "Post not found"})
-        
         try:
             user = UserModel.objects.get(username=request.user.username)
-        except Exception as e:
+        except Exception:
             return Response({"error": "User not found"})
         
         if user in post.likes.all():
@@ -198,7 +180,6 @@ def toggleLike(request):
 def createPost(request):
     try:
         data = request.data
-
         try:
             user = UserModel.objects.get(username=request.user.username)
         except UserModel.DoesNotExist:
@@ -207,9 +188,8 @@ def createPost(request):
         post = PostModel.objects.create(
             user=user,
             description=data.get('description', ''),
-            image=data.get('image', None) 
+            image=data.get('image', None)
         )
-
         serializer = PostSerializer(post, many=False)
         return Response(serializer.data)
     except Exception as e:
@@ -222,12 +202,16 @@ def getFeed(request):
         loggedUser = UserModel.objects.get(username=request.user.username)
     except UserModel.DoesNotExist:
         return Response({"error": "User not found"})
-    
-    posts = PostModel.objects.all().order_by('-created_at')
+
+    following_users = loggedUser.following.all()
+
+    if following_users.exists():
+        posts = PostModel.objects.filter(user__in=following_users).order_by('-created_at')
+    else:
+        posts = PostModel.objects.all().order_by('-created_at')
 
     paginator = PageNumberPagination()
     paginator.page_size = 10
-
     result_page = paginator.paginate_queryset(posts, request)
     serializer = PostSerializer(result_page, many=True)
 
@@ -244,8 +228,8 @@ def getFeed(request):
 @permission_classes([IsAuthenticated])
 def searchUsers(request):
     query = request.query_params.get('query', '')
-    user = UserModel.objects.filter(username__icontains=query)
-    serializer = UserFetchSerializer(user, many=True)
+    users = UserModel.objects.filter(username__icontains=query)
+    serializer = UserFetchSerializer(users, many=True)
     return Response(serializer.data)
 
 @api_view(['PATCH'])
@@ -253,18 +237,14 @@ def searchUsers(request):
 def UpdateUserDetails(request):
     user = request.user
     data = request.data
-
     user.username = data.get("username", user.username)
     user.first_name = data.get("first_name", user.first_name)
     user.last_name = data.get("last_name", user.last_name)
     user.email = data.get("email", user.email)
     user.bio = data.get("bio", user.bio)
-
     if "profile_image" in data and data["profile_image"]:
         user.profile_image = data["profile_image"]
-
     user.save()
-
     serializer = UserFetchSerializer(user, context={'request': request})
     return Response(serializer.data)
 
