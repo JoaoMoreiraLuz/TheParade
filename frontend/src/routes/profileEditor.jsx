@@ -56,8 +56,6 @@ const ProfileEditor = () => {
             const reader = new FileReader();
             reader.onloadend = () => setPreviewImage(reader.result);
             reader.readAsDataURL(file);
-            
-            console.log(import.meta.env)
         } else {
             setImageFile(null);
             setPreviewImage(storage.profile_image || '');
