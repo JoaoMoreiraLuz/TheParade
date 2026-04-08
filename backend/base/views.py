@@ -17,10 +17,7 @@ def isAuthenticated(request):
     try:
         user = request.user
         serializer = UserSerializer(user, many=False)
-        return Response({
-            **serializer.data,
-            "isAuthenticated": True
-        })
+        return Response({**serializer.data, "isAuthenticated": True})
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
 
@@ -171,22 +168,31 @@ def getFeed(request):
     except UserModel.DoesNotExist:
         return Response({"error": "User not found"})
     
-    posts = PostModel.objects.all().order_by('-created_at')
+    
+    following_users = loggedUser.following.all()
+
+    if following_users.exists():
+        posts = PostModel.objects.filter(user__in=following_users).order_by('-created_at')
+    else:
+        posts = PostModel.objects.all().order_by('-created_at')
+
     paginator = PageNumberPagination()
     paginator.page_size = 10
     result_page = paginator.paginate_queryset(posts, request)
     serializer = PostSerializer(result_page, many=True)
     data = []
+    
     for post in serializer.data:
         data.append({**post, "liked": loggedUser.username in post['likes']})
     return paginator.get_paginated_response(data)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def searchUsers(request):
     query = request.query_params.get('query', '')
-    user = UserModel.objects.filter(username__icontains=query)
-    serializer = UserFetchSerializer(user, many=True)
+    users = UserModel.objects.filter(username__icontains=query)
+    serializer = UserFetchSerializer(users, many=True)
     return Response(serializer.data)
 
 @api_view(['PATCH'])
@@ -245,3 +251,30 @@ def createComment(request, post_id):
         return Response({"error": "Post not found"}, status=404)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFollowers(request, username):
+    try:
+        user = UserModel.objects.get(username=username)
+        followers = user.followers.all()
+        serializer = UserFetchSerializer(followers, many=True, context={'request': request})
+        return Response(serializer.data)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
+    except Exception as e:
+        return Response({"error": str(e)})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getFollowing(request, username):
+    try:
+        user = UserModel.objects.get(username=username)
+        following = user.following.all()
+        serializer = UserFetchSerializer(following, many=True, context={'request': request})
+        return Response(serializer.data)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
+    except Exception as e:
+        return Response({"error": str(e)})
