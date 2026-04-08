@@ -11,14 +11,14 @@ const Search = () => {
     const [users, setUsers] = useState([]);
 
         const handleSearch = async () => {
-    try {
-        const data = await searchUsersEndpoint(search);
-        console.log("SEARCH DATA:", data);
-        setUsers(data.results);
-    } catch (err) {
-        console.error("Erro ao buscar usuários:", err);
+        try {
+            const users = await searchUsersEndpoint(search);
+            setUsers(users);
+        } catch (err) {
+            console.error("Erro ao buscar usuários:", err);
+        }
     }
-}
+
 
 
     return (
@@ -27,21 +27,17 @@ const Search = () => {
                 <Heading>Search Users</Heading>
 
                 <HStack w={"100%"} gap={"0"}>
-                    <Input value={search} onChange={(e) => setSearch(e.target.value)} bg={"whitesmoke"} m={3} />
+                    <Input onChange={(e) => setSearch(e.target.value)} bg={"whitesmoke"} m={3} />
                     <Button colorScheme="blue" onClick={handleSearch}>
                         Search
                     </Button>
                 </HStack>
                 <VStack w={"100%"}>
-                    {Array.isArray(users) && users.map((user) => (
-                        <UserProfile 
-                            key={user.username}
-                            username={user.username}
-                            profile_image={user.profile_image}
-                            first_name={user.first_name}
-                            last_name={user.last_name}
-                        />
-                    ))}
+                    {
+                        users.map((user) => (
+                             <UserProfile username={user.username} profile_image={user.profile_image} first_name={user.first_name} last_name={user.last_name} />
+                        ))
+                    }
                 </VStack>
             </VStack>
         </Flex>
@@ -62,7 +58,7 @@ const UserProfile = ({ username, profile_image, first_name, last_name }) => {
             <HStack onClick={handleNav} w={"90%"} gap={3} cursor={"pointer"}>
 
                 <Box boxSize={'70px'} borderRadius={"full"} overflow={"hidden"} bg={"white"} border={"1px solid"}>
-                    <Image src={`${profile_image}`} alt={`${first_name} ${last_name}`} boxSize={"100%"} objectFit={"cover"} />
+                    <Image src={`${SERVER_URL}${profile_image}`} alt={`${first_name} ${last_name}`} boxSize={"100%"} objectFit={"cover"} />
                 </Box>
 
                 <VStack alignItems={"start"} gap={3}> 
