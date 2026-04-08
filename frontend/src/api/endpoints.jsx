@@ -122,9 +122,10 @@ export const updateUser = async (values) => {
     return response.data
 }
  
-// Faz upload direto pro Cloudinary e retorna a URL segura
 export const uploadToCloudinary = async (file) => {
     const formData = new FormData();
+    VITE_CLOUDINARY_CLOUD_NAME = os.environ.get(VITE_CLOUDINARY_CLOUD_NAME)
+    VITE_CLOUDINARY_UPLOAD_PRESET= os.environ.get(VITE_CLOUDINARY_UPLOAD_PRESET)
     formData.append("file", file);
     formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
  

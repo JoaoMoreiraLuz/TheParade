@@ -53,7 +53,6 @@ const ProfileEditor = () => {
         const file = event.target.files[0];
         if (file) {
             setImageFile(file);
-            // Mostra preview local imediatamente
             const reader = new FileReader();
             reader.onloadend = () => setPreviewImage(reader.result);
             reader.readAsDataURL(file);
@@ -69,7 +68,6 @@ const ProfileEditor = () => {
  
             let imageUrl = null;
             if (imageFile) {
-                // Faz upload pro Cloudinary e pega a URL
                 imageUrl = await uploadToCloudinary(imageFile);
             }
  
@@ -79,7 +77,6 @@ const ProfileEditor = () => {
             formData.append("first_name", firstname);
             formData.append("last_name", lastname);
             formData.append("bio", bio);
-            // Envia a URL do Cloudinary ao invés do arquivo binário
             if (imageUrl) formData.append("profile_image", imageUrl);
  
             const updatedUser = await updateUser(formData);
