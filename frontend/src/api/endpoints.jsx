@@ -1,5 +1,6 @@
 import axios from "axios";
-import { SERVER_URL } from "../constants/constants";
+import { SERVER_URL, VITE_CLOUDINARY_CLOUD_NAME, VITE_CLOUDINARY_UPLOAD_PRESET } from "../constants/constants";
+
  
 const API_BASE_URL = SERVER_URL;
  
@@ -124,13 +125,11 @@ export const updateUser = async (values) => {
  
 export const uploadToCloudinary = async (file) => {
     const formData = new FormData();
-    VITE_CLOUDINARY_CLOUD_NAME = os.environ.get(VITE_CLOUDINARY_CLOUD_NAME)
-    VITE_CLOUDINARY_UPLOAD_PRESET= os.environ.get(VITE_CLOUDINARY_UPLOAD_PRESET)
     formData.append("file", file);
-    formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
+    formData.append("upload_preset", import.meta.env.ml_default);
  
     const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        `https://api.cloudinary.com/v1_1/di4g4s4zh/image/upload`,
         { method: "POST", body: formData }
     );
  
