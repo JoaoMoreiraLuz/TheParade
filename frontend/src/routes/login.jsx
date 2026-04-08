@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/useAuth";
 
 const Login = () => {
+    console.log(import.meta.env)
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
