@@ -1,4 +1,2 @@
-export const SERVER_URL = import.meta.env.VITE_API_URL;
 
-VITE_CLOUDINARY_CLOUD_NAME = os.environ.get(VITE_CLOUDINARY_CLOUD_NAME)
-VITE_CLOUDINARY_UPLOAD_PRESET= os.environ.get(VITE_CLOUDINARY_UPLOAD_PRESET)
+export const SERVER_URL = import.meta.env.VITE_API_URL;
