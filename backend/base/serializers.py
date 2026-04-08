@@ -1,4 +1,3 @@
-#transform informations into json format
 from rest_framework import serializers
 from .models import UserModel, PostModel
 
@@ -56,7 +55,6 @@ class PostSerializer(serializers.ModelSerializer):
         return obj.created_at.strftime("%Y-%m-%d")
     
 class UserFetchSerializer(serializers.ModelSerializer):
-    profile_image = serializers.SerializerMethodField()
     followersCount = serializers.SerializerMethodField()
     followingCount = serializers.SerializerMethodField()
 
@@ -64,17 +62,8 @@ class UserFetchSerializer(serializers.ModelSerializer):
         model = UserModel
         fields = ['username', 'email', 'first_name', 'last_name', 'bio', 'profile_image', 'followersCount', 'followingCount']
 
-    def get_profile_image(self, obj):
-        if obj.profile_image:
-            request = self.context.get('request')
-            if request:
-                # Adiciona /api antes de /media
-                return request.build_absolute_uri(f"/api{obj.profile_image.url}")
-            return f"/api{obj.profile_image.url}"
-        return None
-
     def get_followersCount(self, obj):
-        return obj.followers.count()  # Total de pessoas que seguem este usuário
+        return obj.followers.count()
 
     def get_followingCount(self, obj):
-        return obj.following.count()  # Total de pessoas que este usuário segue
+        return obj.following.count()

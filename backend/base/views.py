@@ -18,18 +18,10 @@ def isAuthenticated(request):
     try:
         user = request.user
         serializer = UserSerializer(user, many=False)
-
-        # Garante que a URL da imagem seja completa
-        profile_image_url = serializer.data.get('profile_image')
-        if profile_image_url and not profile_image_url.startswith("http"):
-            profile_image_url = request.build_absolute_uri(profile_image_url)
-
-        response_data = {
+        return Response({
             **serializer.data,
-            "profile_image": profile_image_url,
             "isAuthenticated": True
-        }
-        return Response(response_data)
+        })
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
 
@@ -45,7 +37,6 @@ def registerUser(request):
 class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         try:
-            
             response = super().post(request, *args, **kwargs)
             tokens = response.data
 
@@ -94,7 +85,6 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class CustomRefreshTokenView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try:
-                
             refresh_token = request.COOKIES.get("refresh_token")
             request.data['refresh'] = refresh_token
 
@@ -114,13 +104,11 @@ class CustomRefreshTokenView(TokenRefreshView):
                 secure=False,
                 samesite="Lax",
                 path="/"
-                )
+            )
             
             return res
         except Exception as e:
             return Response({"error": str(e)}, status=401)
-
-        
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -155,7 +143,7 @@ def toggleFollow(request):
         if myUser in userToFollow.followers.all():
             userToFollow.followers.remove(myUser)
             return Response({"isFollowing": False})
-        else :
+        else:
             userToFollow.followers.add(myUser)
             return Response({"isFollowing": True})
     except Exception as e:
@@ -174,15 +162,11 @@ def getPosts(request, primary_key):
     serializer = PostSerializer(posts, many=True)
 
     data = []
-
     for post in serializer.data:
-        new_post = {}
-
         if loggedUser.username in post['likes']:
-            new_post = {**post, "liked": True}
+            data.append({**post, "liked": True})
         else:
-            new_post = {**post, "liked": False}
-        data.append(new_post)
+            data.append({**post, "liked": False})
 
     return Response(data)
 
@@ -212,7 +196,6 @@ def toggleLike(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def createPost(request):
-    
     try:
         data = request.data
 
@@ -224,7 +207,7 @@ def createPost(request):
         post = PostModel.objects.create(
             user=user,
             description=data.get('description', ''),
-            image=data.get('image', None)
+            image=data.get('image', None) 
         )
 
         serializer = PostSerializer(post, many=False)
@@ -235,7 +218,6 @@ def createPost(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getFeed(request):
-
     try:
         loggedUser = UserModel.objects.get(username=request.user.username)
     except UserModel.DoesNotExist:
@@ -250,15 +232,11 @@ def getFeed(request):
     serializer = PostSerializer(result_page, many=True)
 
     data = []
-
     for post in serializer.data:
-        new_post = {}
-
         if loggedUser.username in post['likes']:
-            new_post = {**post, "liked": True}
+            data.append({**post, "liked": True})
         else:
-            new_post = {**post, "liked": False}
-        data.append(new_post)
+            data.append({**post, "liked": False})
 
     return paginator.get_paginated_response(data)
 
@@ -274,16 +252,16 @@ def searchUsers(request):
 @permission_classes([IsAuthenticated])
 def UpdateUserDetails(request):
     user = request.user
-
     data = request.data
+
     user.username = data.get("username", user.username)
     user.first_name = data.get("first_name", user.first_name)
     user.last_name = data.get("last_name", user.last_name)
     user.email = data.get("email", user.email)
     user.bio = data.get("bio", user.bio)
 
-    if "profile_image" in request.FILES:
-        user.profile_image = request.FILES["profile_image"]
+    if "profile_image" in data and data["profile_image"]:
+        user.profile_image = data["profile_image"]
 
     user.save()
 
@@ -295,11 +273,9 @@ def UpdateUserDetails(request):
 def logout(request):
     try:
         res = Response()
-        res.data = {"success":True}
+        res.data = {"success": True}
         res.delete_cookie('access_token', path='/', samesite='None')
         res.delete_cookie('refresh_token', path='/', samesite='None')
         return res
-    
     except:
-        return Response({"success":False})
-    
+        return Response({"success": False})

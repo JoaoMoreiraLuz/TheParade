@@ -1,9 +1,8 @@
-import { Box, Button, Flex, Heading, HStack, Image, Spacer, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, HStack, Image, Text, VStack } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { getUserProfile, toggleFollow, getUserPosts } from "../api/endpoints";
 import { useAuth } from "../contexts/useAuth";
 import { Post } from "../components/post";
-
 import { useNavigate } from 'react-router-dom';
 
 function UserProfile() {
@@ -36,14 +35,14 @@ function UserProfile() {
 const UserDetails = ({ username }) => {
   const { user: loggedInUser } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [userData, setUserData] = useState(null); 
+  const [userData, setUserData] = useState(null);
   const [isOurProfile, setIsOurProfile] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
-  const nav = useNavigate()
+  const nav = useNavigate();
 
   const handleEditButton = () => {
-    nav('/profileEditor')
+    nav('/profileEditor');
   }
 
   const handleFollowToggle = async () => {
@@ -70,7 +69,7 @@ const UserDetails = ({ username }) => {
         setUserData(res.user);
         setIsFollowing(res.Following);
 
-        if (loggedInUser && loggedInUser.username === userData.username) {
+        if (loggedInUser && res.user && loggedInUser.username === res.user.username) {
           setIsOurProfile(true);
         } else {
           setIsOurProfile(false);
@@ -104,7 +103,7 @@ const UserDetails = ({ username }) => {
           <Image
             boxSize="100%"
             objectFit="cover"
-            src={loading ? null : userData.profile_image}
+            src={userData.profile_image}
           />
         </Box>
 
@@ -142,14 +141,12 @@ const UserDetails = ({ username }) => {
   );
 };
 
-
-const UserPosts = ({username}) => {
+const UserPosts = ({ username }) => {
 
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-
     const fetchPosts = async () => {
       try {
         const data = await getUserPosts(username);
@@ -162,27 +159,20 @@ const UserPosts = ({username}) => {
     };
 
     fetchPosts();
-
   }, [username]);
 
   return (
     <Flex w={"100%"} flexWrap={"wrap"} gap={"20px"} justifyContent={"center"} pb={3}>
-      
-    {loading ? 
-      
-      <Text>Loading...</Text> 
-      
-      :
-      
-      posts.length === 0 ?
-        <Text>This user has no posts yet.</Text>
-      :
-        posts.map((post) => (
-          <Post key={post.id} id={post.id} username={post.username} description={post.description} liked={post.liked} image={post.image} likes_count={post.likes_count} format_created_at={post.format_created_at} />
-        ))
-    }
-      
-
+      {loading ?
+        <Text>Loading...</Text>
+        :
+        posts.length === 0 ?
+          <Text>This user has no posts yet.</Text>
+          :
+          posts.map((post) => (
+            <Post key={post.id} id={post.id} username={post.username} description={post.description} liked={post.liked} image={post.image} likes_count={post.likes_count} format_created_at={post.format_created_at} />
+          ))
+      }
     </Flex>
   )
 }
