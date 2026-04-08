@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SERVER_URL, VITE_CLOUDINARY_CLOUD_NAME, VITE_CLOUDINARY_UPLOAD_PRESET } from "../constants/constants";
+import { SERVER_URL } from "../constants/constants";
 
  
 const API_BASE_URL = SERVER_URL;

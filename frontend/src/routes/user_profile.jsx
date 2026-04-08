@@ -69,7 +69,6 @@ const UserDetails = ({ username }) => {
         setUserData(res.user);
         setIsFollowing(res.Following);
 
-        // Corrigido: usa res.user diretamente para evitar comparar com userData (ainda null)
         if (loggedInUser && res.user && loggedInUser.username === res.user.username) {
           setIsOurProfile(true);
         } else {
@@ -101,7 +100,6 @@ const UserDetails = ({ username }) => {
           borderRadius="full"
           overflow="hidden"
         >
-          {/* Com Cloudinary, a URL já vem completa */}
           <Image
             boxSize="100%"
             objectFit="cover"
