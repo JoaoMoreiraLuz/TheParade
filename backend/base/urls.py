@@ -1,15 +1,3 @@
-# Adicione estas duas rotas no seu urls.py, junto com as existentes:
-#
-# from .views import getFollowers, getFollowing
-#
-# urlpatterns = [
-#     ...suas rotas existentes...
-#     path('followers/<str:username>/', getFollowers),
-#     path('following/<str:username>/', getFollowing),
-# ]
-#
-# Exemplo completo de como deve ficar o urls.py:
-
 from django.urls import path
 from .views import (
     registerUser,
@@ -18,8 +6,6 @@ from .views import (
     CustomRefreshTokenView,
     getUser,
     toggleFollow,
-    getFollowers,
-    getFollowing,
     getPosts,
     toggleLike,
     createPost,
@@ -27,6 +13,8 @@ from .views import (
     searchUsers,
     UpdateUserDetails,
     logout,
+    getComments,
+    createComment,
 )
 
 urlpatterns = [
@@ -36,8 +24,6 @@ urlpatterns = [
     path('token/refresh/', CustomRefreshTokenView.as_view()),
     path('user/<str:primary_key>/', getUser),
     path('toggle-follow/', toggleFollow),
-    path('followers/<str:username>/', getFollowers),   
-    path('following/<str:username>/', getFollowing),   
     path('posts/<str:primary_key>/', getPosts),
     path('toggle-like/', toggleLike),
     path('create-post/', createPost),
@@ -45,4 +31,6 @@ urlpatterns = [
     path('search/', searchUsers),
     path('update_user/', UpdateUserDetails),
     path('logout/', logout),
+    path('posts/<int:post_id>/comments/', getComments),
+    path('posts/<int:post_id>/comments/create/', createComment),
 ]

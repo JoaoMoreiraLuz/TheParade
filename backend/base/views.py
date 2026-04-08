@@ -1,11 +1,10 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-
 from rest_framework.pagination import PageNumberPagination
 
-from .models import PostModel, UserModel
-from .serializers import UserRegisterSerializer, UserFetchSerializer, UserSerializer, PostSerializer
+from .models import PostModel, UserModel, CommentModel
+from .serializers import UserRegisterSerializer, UserFetchSerializer, UserSerializer, PostSerializer, CommentSerializer
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
@@ -18,7 +17,10 @@ def isAuthenticated(request):
     try:
         user = request.user
         serializer = UserSerializer(user, many=False)
-        return Response({**serializer.data, "isAuthenticated": True})
+        return Response({
+            **serializer.data,
+            "isAuthenticated": True
+        })
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
 
@@ -50,7 +52,11 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
             serializer = UserFetchSerializer(user, context={'request': request})
             res = Response()
-            res.data = {"success": True, "isAuthenticated": True, "user": serializer.data}
+            res.data = {
+                "success": True,
+                "isAuthenticated": True,
+                "user": serializer.data
+            }
             res.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="None", path="/")
             res.set_cookie(key="refresh_token", value=refresh_token, httponly=True, secure=True, samesite="None", path="/")
             return res
@@ -63,7 +69,8 @@ class CustomRefreshTokenView(TokenRefreshView):
             refresh_token = request.COOKIES.get("refresh_token")
             request.data['refresh'] = refresh_token
             response = super().post(request, *args, **kwargs)
-            access_token = response.data['access']
+            tokens = response.data
+            access_token = tokens['access']
             res = Response({"access": access_token})
             res.set_cookie(key="access_token", value=access_token, httponly=True, secure=False, samesite="Lax", path="/")
             return res
@@ -104,35 +111,7 @@ def toggleFollow(request):
         return Response({"error": "User not found"})
     except Exception as e:
         return Response({"error": f"An error occurred: {str(e)}"})
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getFollowers(request, username):
-    try:
-        user = UserModel.objects.get(username=username)
-        followers = user.followers.all()
-        serializer = UserFetchSerializer(followers, many=True, context={'request': request})
-        return Response(serializer.data)
-    except UserModel.DoesNotExist:
-        return Response({"error": "User not found"})
-    except Exception as e:
-        return Response({"error": str(e)})
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getFollowing(request, username):
-    try:
-        user = UserModel.objects.get(username=username)
-        following = user.following.all()
-        serializer = UserFetchSerializer(following, many=True, context={'request': request})
-        return Response(serializer.data)
-    except UserModel.DoesNotExist:
-        return Response({"error": "User not found"})
-    except Exception as e:
-        return Response({"error": str(e)})
-
+    
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getPosts(request, primary_key):
@@ -144,47 +123,34 @@ def getPosts(request, primary_key):
     
     posts = user.posts.all().order_by('-created_at')
     serializer = PostSerializer(posts, many=True)
-
     data = []
     for post in serializer.data:
-        if loggedUser.username in post['likes']:
-            data.append({**post, "liked": True})
-        else:
-            data.append({**post, "liked": False})
+        data.append({**post, "liked": loggedUser.username in post['likes']})
     return Response(data)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def toggleLike(request):
     try:
-        try:
-            post = PostModel.objects.get(id=request.data['post_id'])
-        except PostModel.DoesNotExist:
-            return Response({"error": "Post not found"})
-        try:
-            user = UserModel.objects.get(username=request.user.username)
-        except Exception:
-            return Response({"error": "User not found"})
-        
+        post = PostModel.objects.get(id=request.data['post_id'])
+        user = UserModel.objects.get(username=request.user.username)
         if user in post.likes.all():
             post.likes.remove(user)
             return Response({"liked": False})
         else:
             post.likes.add(user)
             return Response({"liked": True})
+    except PostModel.DoesNotExist:
+        return Response({"error": "Post not found"})
     except Exception as e:
-        return Response({"error": "failed to like the post"}) 
+        return Response({"error": "failed to like the post"})
     
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def createPost(request):
     try:
         data = request.data
-        try:
-            user = UserModel.objects.get(username=request.user.username)
-        except UserModel.DoesNotExist:
-            return Response({"error": "User not found"})
-        
+        user = UserModel.objects.get(username=request.user.username)
         post = PostModel.objects.create(
             user=user,
             description=data.get('description', ''),
@@ -192,6 +158,8 @@ def createPost(request):
         )
         serializer = PostSerializer(post, many=False)
         return Response(serializer.data)
+    except UserModel.DoesNotExist:
+        return Response({"error": "User not found"})
     except Exception as e:
         return Response({"error": "An error occurred while creating the post: " + str(e)})
     
@@ -202,34 +170,23 @@ def getFeed(request):
         loggedUser = UserModel.objects.get(username=request.user.username)
     except UserModel.DoesNotExist:
         return Response({"error": "User not found"})
-
-    following_users = loggedUser.following.all()
-
-    if following_users.exists():
-        posts = PostModel.objects.filter(user__in=following_users).order_by('-created_at')
-    else:
-        posts = PostModel.objects.all().order_by('-created_at')
-
+    
+    posts = PostModel.objects.all().order_by('-created_at')
     paginator = PageNumberPagination()
     paginator.page_size = 10
     result_page = paginator.paginate_queryset(posts, request)
     serializer = PostSerializer(result_page, many=True)
-
     data = []
     for post in serializer.data:
-        if loggedUser.username in post['likes']:
-            data.append({**post, "liked": True})
-        else:
-            data.append({**post, "liked": False})
-
+        data.append({**post, "liked": loggedUser.username in post['likes']})
     return paginator.get_paginated_response(data)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def searchUsers(request):
     query = request.query_params.get('query', '')
-    users = UserModel.objects.filter(username__icontains=query)
-    serializer = UserFetchSerializer(users, many=True)
+    user = UserModel.objects.filter(username__icontains=query)
+    serializer = UserFetchSerializer(user, many=True)
     return Response(serializer.data)
 
 @api_view(['PATCH'])
@@ -259,3 +216,32 @@ def logout(request):
         return res
     except:
         return Response({"success": False})
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getComments(request, post_id):
+    try:
+        post = PostModel.objects.get(id=post_id)
+    except PostModel.DoesNotExist:
+        return Response({"error": "Post not found"}, status=404)
+    comments = post.comments.all().order_by('created_at')
+    serializer = CommentSerializer(comments, many=True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def createComment(request, post_id):
+    try:
+        post = PostModel.objects.get(id=post_id)
+        user = UserModel.objects.get(username=request.user.username)
+        text = request.data.get('text', '').strip()
+        if not text:
+            return Response({"error": "Comment cannot be empty"}, status=400)
+        comment = CommentModel.objects.create(post=post, user=user, text=text)
+        serializer = CommentSerializer(comment)
+        return Response(serializer.data, status=201)
+    except PostModel.DoesNotExist:
+        return Response({"error": "Post not found"}, status=404)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)

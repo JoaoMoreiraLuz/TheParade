@@ -1,8 +1,10 @@
 import axios from "axios";
 import { SERVER_URL } from "../constants/constants";
 
+const API_BASE_URL = SERVER_URL;
+
 const API = axios.create({
-    baseURL: SERVER_URL,
+    baseURL: API_BASE_URL,
     withCredentials: true,
 });
 
@@ -13,7 +15,9 @@ API.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const refreshToken = document.cookie.split('; ').find(row => row.startsWith('refresh_token='));
+                const refreshToken = document.cookie
+                    .split('; ')
+                    .find(row => row.startsWith('refresh_token='));
                 if (!refreshToken) return Promise.reject(error);
                 const res = await API.post("/token/refresh/");
                 if (!res.data?.access) throw new Error("Refresh falhou");
@@ -52,16 +56,6 @@ export const toggleFollow = async (username) => {
     return response.data;
 };
 
-export const getFollowers = async (username) => {
-    const response = await API.get(`/followers/${username}/`);
-    return response.data;
-};
-
-export const getFollowing = async (username) => {
-    const response = await API.get(`/following/${username}/`);
-    return response.data;
-};
-
 export const getUserPosts = async (username) => {
     const response = await API.get(`/posts/${username}/`);
     return response.data;
@@ -93,7 +87,9 @@ export const logout = async () => {
 };
 
 export const updateUser = async (values) => {
-    const response = await API.patch("/update_user/", values, { headers: { 'Content-Type': 'multipart/form-data' } });
+    const response = await API.patch("/update_user/", values, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    });
     return response.data;
 };
 
@@ -101,13 +97,21 @@ export const uploadToCloudinary = async (file) => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-
     const res = await fetch(
         `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
         { method: "POST", body: formData }
     );
-
     if (!res.ok) throw new Error("Falha no upload para o Cloudinary");
     const data = await res.json();
     return data.secure_url;
+};
+
+export const getComments = async (post_id) => {
+    const response = await API.get(`/posts/${post_id}/comments/`);
+    return response.data;
+};
+
+export const createComment = async (post_id, text) => {
+    const response = await API.post(`/posts/${post_id}/comments/create/`, { text });
+    return response.data;
 };

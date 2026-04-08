@@ -1,5 +1,5 @@
 import { Flex, Heading, HStack, VStack, Button, Input, Text, Box, Image } from "@chakra-ui/react";''
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SERVER_URL } from "../constants/constants";
 import { useNavigate } from "react-router-dom";
 
@@ -10,9 +10,13 @@ const Search = () => {
     const [search, setSearch] = useState("");
     const [users, setUsers] = useState([]);
 
-    const handleSearch = async () => {
-        const users = await searchUsersEndpoint(search);
-        setUsers(users);
+        const handleSearch = async () => {
+        try {
+            const users = await searchUsersEndpoint(search);
+            setUsers(users);
+        } catch (err) {
+            console.error("Erro ao buscar usuários:", err);
+        }
     }
 
 
@@ -53,7 +57,7 @@ const UserProfile = ({ username, profile_image, first_name, last_name }) => {
             <HStack onClick={handleNav} w={"90%"} gap={3} cursor={"pointer"}>
 
                 <Box boxSize={'70px'} borderRadius={"full"} overflow={"hidden"} bg={"white"} border={"1px solid"}>
-                    <Image src={`${SERVER_URL}${profile_image}`} alt={`${first_name} ${last_name}`} boxSize={"100%"} objectFit={"cover"} />
+                    <Image src={`${profile_image}`} alt={`${first_name} ${last_name}`} boxSize={"100%"} objectFit={"cover"} />
                 </Box>
 
                 <VStack alignItems={"start"} gap={3}> 
