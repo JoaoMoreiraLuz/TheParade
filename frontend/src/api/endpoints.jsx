@@ -117,11 +117,15 @@ export const createComment = async (post_id, text) => {
 };
 
 export const getFollowers = async (username) => {
-    const response = await API.get(`/users/${username}/followers/`);
-    return response.data;
+    try {
+        const response = await API.get(`/followers/${username}/`);
+        return response.data;
+    } catch (err) {
+        console.error(err);
+        return []; 
+    }
 }
-
 export const getFollowing = async (username) => {
-    const response = await API.get(`/users/${username}/following/`);
+    const response = await API.get(`/following/${username}/`);
     return response.data;
 }

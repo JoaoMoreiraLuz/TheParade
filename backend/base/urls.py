@@ -1,3 +1,15 @@
+# Adicione estas duas rotas no seu urls.py, junto com as existentes:
+#
+# from .views import getFollowers, getFollowing
+#
+# urlpatterns = [
+#     ...suas rotas existentes...
+#     path('followers/<str:username>/', getFollowers),
+#     path('following/<str:username>/', getFollowing),
+# ]
+#
+# Exemplo completo de como deve ficar o urls.py:
+
 from django.urls import path
 from .views import (
     registerUser,
@@ -6,6 +18,8 @@ from .views import (
     CustomRefreshTokenView,
     getUser,
     toggleFollow,
+    getFollowers,
+    getFollowing,
     getPosts,
     toggleLike,
     createPost,
@@ -24,6 +38,8 @@ urlpatterns = [
     path('token/refresh/', CustomRefreshTokenView.as_view()),
     path('user/<str:primary_key>/', getUser),
     path('toggle-follow/', toggleFollow),
+    path('followers/<str:username>/', getFollowers),   
+    path('following/<str:username>/', getFollowing),   
     path('posts/<str:primary_key>/', getPosts),
     path('toggle-like/', toggleLike),
     path('create-post/', createPost),

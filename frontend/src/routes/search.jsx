@@ -33,11 +33,15 @@ const Search = () => {
                     </Button>
                 </HStack>
                 <VStack w={"100%"}>
-                    {
-                        users.map((user) => (
-                             <UserProfile username={user.username} profile_image={user.profile_image} first_name={user.first_name} last_name={user.last_name} />
-                        ))
-                    }
+                    {Array.isArray(users) && users.map((user) => (
+                        <UserProfile 
+                            key={user.username}
+                            username={user.username}
+                            profile_image={user.profile_image}
+                            first_name={user.first_name}
+                            last_name={user.last_name}
+                        />
+                    ))}
                 </VStack>
             </VStack>
         </Flex>

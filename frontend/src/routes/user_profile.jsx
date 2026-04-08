@@ -49,11 +49,11 @@ const FollowListModal = ({ isOpen, onClose, title, users, loading }) => {
                         <Flex justifyContent="center" py={6}>
                             <Spinner />
                         </Flex>
-                    ) : users.length === 0 ? (
+                    ) : !users || users.length === 0 ? (
                         <Text color="gray.500" textAlign="center" py={4}>No users found.</Text>
                     ) : (
                         <VStack align="stretch" gap={3}>
-                            {users.map(user => (
+                            {users?.map(user => (
                                 <HStack
                                     key={user.username}
                                     gap={3}
@@ -122,6 +122,7 @@ const UserDetails = ({ username }) => {
         onOpen();
         try {
             const data = await getFollowers(username);
+            console.log("FOLLOWING DATA:", data);
             setModalUsers(data.followers);
         } catch (err) {
             console.error("Erro ao buscar seguidores:", err);
@@ -137,6 +138,7 @@ const UserDetails = ({ username }) => {
         onOpen();
         try {
             const data = await getFollowing(username);
+            console.log("FOLLOWING DATA:", data);
             setModalUsers(data);
         } catch (err) {
             console.error("Erro ao buscar seguidos:", err);
