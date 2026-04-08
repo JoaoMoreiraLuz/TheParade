@@ -115,3 +115,13 @@ export const createComment = async (post_id, text) => {
     const response = await API.post(`/posts/${post_id}/comments/create/`, { text });
     return response.data;
 };
+
+export const getFollowers = async (username) => {
+    const res = await fetch(`${SERVER_URL}/users/${username}/followers/`);
+    return res.json();
+}
+
+export const getFollowing = async (username) => {
+    const res = await fetch(`${SERVER_URL}/users/${username}/following/`);
+    return res.json();
+}
