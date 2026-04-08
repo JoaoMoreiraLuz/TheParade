@@ -31,7 +31,7 @@ export const Post = ({ id, username, description, liked, image, likes_count, for
 
     const handleUsernameClick = (e) => {
         e.stopPropagation();
-        navigate(`/profile/${username}`);
+        navigate(`/${username}`);
     };
 
     return (
