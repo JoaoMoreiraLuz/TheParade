@@ -61,7 +61,7 @@ const FollowListModal = ({ isOpen, onClose, title, users, loading }) => {
                                     borderRadius="md"
                                     cursor="pointer"
                                     _hover={{ bg: "gray.100" }}
-                                    onClick={() => { onClose(); nav(`/profile/${user.username}`); }}
+                                    onClick={() => { onClose(); nav(`/${user.username}`); }}
                                 >
                                     <Avatar
                                         size="sm"
