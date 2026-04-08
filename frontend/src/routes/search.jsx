@@ -11,13 +11,14 @@ const Search = () => {
     const [users, setUsers] = useState([]);
 
         const handleSearch = async () => {
-        try {
-            const users = await searchUsersEndpoint(search);
-            setUsers(users);
-        } catch (err) {
-            console.error("Erro ao buscar usuários:", err);
-        }
+    try {
+        const data = await searchUsersEndpoint(search);
+        console.log("SEARCH DATA:", data);
+        setUsers(data.results);
+    } catch (err) {
+        console.error("Erro ao buscar usuários:", err);
     }
+}
 
 
     return (
@@ -26,7 +27,7 @@ const Search = () => {
                 <Heading>Search Users</Heading>
 
                 <HStack w={"100%"} gap={"0"}>
-                    <Input onChange={(e) => setSearch(e.target.value)} bg={"whitesmoke"} m={3} />
+                    <Input value={search} onChange={(e) => setSearch(e.target.value)} bg={"whitesmoke"} m={3} />
                     <Button colorScheme="blue" onClick={handleSearch}>
                         Search
                     </Button>

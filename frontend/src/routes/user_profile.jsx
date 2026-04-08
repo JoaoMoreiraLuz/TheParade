@@ -122,7 +122,7 @@ const UserDetails = ({ username }) => {
         onOpen();
         try {
             const data = await getFollowers(username);
-            setModalUsers(data);
+            setModalUsers(data.followers);
         } catch (err) {
             console.error("Erro ao buscar seguidores:", err);
         } finally {

@@ -77,7 +77,7 @@ export const getFeedPosts = async (num) => {
 };
 
 export const searchUsersEndpoint = async (search) => {
-    const response = await API.get(`/search/?query=${search}`);
+    const response = await API.get(`/search/?query=${encodeURIComponent(search)}`);
     return response.data;
 };
 
@@ -117,11 +117,11 @@ export const createComment = async (post_id, text) => {
 };
 
 export const getFollowers = async (username) => {
-    const res = await fetch(`${SERVER_URL}/users/${username}/followers/`);
-    return res.json();
+    const response = await API.get(`/users/${username}/followers/`);
+    return response.data;
 }
 
 export const getFollowing = async (username) => {
-    const res = await fetch(`${SERVER_URL}/users/${username}/following/`);
-    return res.json();
+    const response = await API.get(`/users/${username}/following/`);
+    return response.data;
 }
