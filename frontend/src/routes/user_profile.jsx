@@ -98,7 +98,11 @@ const UserDetails = ({ username }) => {
     const [modalLoading, setModalLoading] = useState(false);
     const { isOpen, onOpen, onClose } = useDisclosure();
 
-    const nav = useNavigate();
+    const nav = () => {
+        useNavigate();
+        window.location.reload()
+    }
+        
 
     const handleEditButton = () => nav('/profileEditor');
 
