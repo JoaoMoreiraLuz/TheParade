@@ -128,10 +128,10 @@ export const getFollowers = async (username) => {
 
 export const getFollowing = async (username) => {
     try {
-        const response = await API.get(`/followers/${username}/`);
+        const response = await API.get(`/following/${username}/`);
         return response.data;
     } catch (err) {
         console.error(err);
         return []; 
-    }s
+    }
 }
